@@ -11,7 +11,7 @@ env:
   REGISTRY: ${{ vars.REGISTRY || format('ghcr.io/{0}', github.repository_owner) }}
   IMAGE_NAME: ${{ vars.IMAGE_NAME || github.event.repository.name }}
   BUILD_ARGS: ${{ vars.BUILD_ARGS || '' }}
-  BUILD_ARCH: ${{ vars.BUILD_ARCH || 'linux/amd64,linux/arm64' }}
+  BUILD_ARCH: ${{ vars.BUILD_ARCH || 'linux/amd64' }}
 
 # Set concurrency for this workflow to cancel in-progress jobs if retriggered.
 # The github.ref is only available when triggered by a PR so fall back to github.run_id for other cases.
