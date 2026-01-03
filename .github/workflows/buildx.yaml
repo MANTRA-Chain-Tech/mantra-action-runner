@@ -34,6 +34,16 @@ jobs:
       - name: Build docker image
         shell: bash
         run: echo "Build docker image - fast version"
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space-action@v1.3.1
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: false
       - uses: mantra-chain-tech/infra-github-actions-mantrachain/docker-buildx-v1@v1.0.0
         with:
           container_repository: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
