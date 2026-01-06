@@ -10,8 +10,6 @@ on:
 env:
   REGISTRY: ${{ vars.REGISTRY || format('ghcr.io/{0}', github.repository_owner) }}
   IMAGE_NAME: ${{ vars.IMAGE_NAME || github.event.repository.name }}
-  BUILD_ARGS: ${{ vars.BUILD_ARGS || '' }}
-  BUILD_ARCH: ${{ vars.BUILD_ARCH || 'linux/amd64' }}
 
 # Set concurrency for this workflow to cancel in-progress jobs if retriggered.
 # The github.ref is only available when triggered by a PR so fall back to github.run_id for other cases.
@@ -28,34 +26,33 @@ jobs:
       packages: write
       contents: read
     name: Docker Buildx
-    runs-on: ${{ vars.RUNNER_SPEC || 'ubuntu-latest' }}
+    runs-on: ${{  matrix.runner.name || 'ubuntu-latest' }}
+    strategy:
+      matrix:
+        runner:
+          - name: ubuntu-latest
+            arch: linux/amd64
+            runner-arch: amd64
+          - name: ubuntu-24.04-arm
+            arch: linux/arm64
+            runner-arch: arm64
+        
     steps:
       # Run a dummy shell command
       - name: Build docker image
         shell: bash
         run: echo "Build docker image - fast version"
-      - name: Free Disk Space (Ubuntu)
-        uses: jlumbroso/free-disk-space@main
-        with:
-          # this might remove tools that are actually needed,
-          # if set to "true" but frees about 6 GB
-          tool-cache: false
-          
-          # all of these default to true, but feel free to set to
-          # "false" if necessary for your workflow
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: true
-          swap-storage: true
       - uses: mantra-chain-tech/infra-github-actions-mantrachain/docker-buildx-v1@v1.0.0
         with:
-          container_repository: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          container_repository: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.runner.runner-arch }}
           build_context: "."
-          build_args: ${{ env.BUILD_ARGS }}
           registry: ${{ env.REGISTRY }}
           registry_username: ${{ github.actor }}
           registry_password: ${{ secrets.GITHUB_TOKEN }}
-          arch: ${{ env.BUILD_ARCH}}
+          arch: ${{ matrix.runner.arch }}
           docker_push: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
+          build_args: |
+            RUNNER_VERSION=${{ vars.RUNNER_VERSION }}
+            TARGETARCH=${{ matrix.runner.runner-arch }}
+
+
