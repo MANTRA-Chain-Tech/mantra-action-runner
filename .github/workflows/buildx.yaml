@@ -4,6 +4,10 @@
 # Trigger
 name: Docker Buildx - Standard
 
+permissions:
+  packages: write
+  contents: write
+
 on:
   workflow_dispatch:
 
@@ -22,9 +26,6 @@ concurrency:
 jobs:
 
   buildx:
-    permissions:
-      packages: write
-      contents: read
     name: Docker Buildx
     runs-on: ${{  matrix.runner.name || 'ubuntu-latest' }}
     strategy:
@@ -44,7 +45,7 @@ jobs:
         run: echo "Build docker image - fast version"
       - uses: mantra-chain-tech/infra-github-actions-mantrachain/docker-buildx-v1@v1.0.0
         with:
-          container_repository: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.runner.runner-arch }}
+          container_repository: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/${{ matrix.runner.runner-arch }}
           build_context: "."
           registry: ${{ env.REGISTRY }}
           registry_username: ${{ github.actor }}
